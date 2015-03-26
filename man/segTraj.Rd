@@ -14,7 +14,7 @@ hybrid_simultanee
 DynProg
 }
 \examples{
-#' K  <- 5; rupt <- sample(1:20, K+1, replace=TRUE); rupt <- cumsum(rupt);
+K  <- 5; rupt <- sample(1:20, K+1, replace=TRUE); rupt <- cumsum(rupt);
 n <- max(rupt)
 muSim <- matrix(rnorm(2*K+2,  mean=20, sd=5), nrow=2)
 muSim <- apply(muSim,1, cumsum)
