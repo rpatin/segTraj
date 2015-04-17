@@ -3,12 +3,10 @@
 \alias{segTraj}
 \docType{package}
 \title{
-What the package does (short line)
-~~ package title ~~
+  Segmentation of Bivariate Time Series
 }
 \description{
-More about what it does (maybe more than one line)
-~~ A concise (1-5 lines) description of the package ~~
+  Segmentation and clustering of a bivariate time series.
 }
 \details{
 \tabular{ll}{
@@ -20,20 +18,16 @@ License: \tab What license is it under?\cr
 }
 }
 \author{
-Marie-Pierre Etienne, Emilie Lebarbier and Franck Picard
+Marie-Pierre Etienne, Emilie Lebarbier, Clement Calenge and Franck Picard
 
-Maintainer: Who to complain to <yourfault@somewhere.net>
-~~ The author and/or maintainer of the package ~~
+Maintainer: Marie-Pierre Etienne <marie.etienne@agroparistech.fr>
 }
 \references{
-~~ Literature or other references for background information ~~
+  Picard, F. 2006. Process segmentation/clustering. Application to the
+  analysis of CGH microarray data. PhD thesis, University Paris XI,
+  Orsay.
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R documentation ~~
-~~ directory ~~
 \keyword{ package }
-\seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
 \examples{
+## No examples
 }

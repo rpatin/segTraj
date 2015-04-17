@@ -7,6 +7,8 @@
 EM.algo_simultanee(x, rupt, P, phi)
 }
 \arguments{
+\item{x}{The bivariate time series to be segmented}
+
 \item{rupt}{ahe sequence of change points}
 
 \item{P}{number of clusters}

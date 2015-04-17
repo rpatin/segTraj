@@ -8,6 +8,8 @@ bisig_plot(x, rupt = NULL, mu = NULL, pop = NULL)
 }
 \arguments{
 \item{x}{the signal to be plotted}
+\item{mu}{the mu}
+\item{pop}{the pop}
 
 \item{rupt}{optionnal, if given add vertical lines at change points (rupt should)}
 }

@@ -10,6 +10,11 @@ EM.init_simultanee(x, rupt, K, P)
 \item{x}{the bivariate signal}
 
 \item{rupt}{the  change point instants, data.frame}
+
+\item{K}{an integer value indicating the number of segments}
+
+\item{P}{the number of classes}
+
 }
 \description{
 EM.init_simultanee proposes an inial value for the EM algorithm  based on a hierarchical clustering  algorithm (ascending)
