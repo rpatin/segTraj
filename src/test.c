@@ -1192,6 +1192,173 @@ SEXP EMAlgoSimultane(SEXP x, SEXP rupt, SEXP Pr, SEXP phi)
 
 
 
+/* The function neighbors is the C equivalent of the R function neighbors. 
+   It takes as arguments:
+   - the bivariate series x
+   - The number of classe P
+   - the list entree containing the result of the segmentation (the object resu returned
+   by the hybrid algorithm). This list has two elements:
+   -- the first element (index 0) is a Kmax-vector containing the log-likelihood associated
+      to each number of segment (Linc)
+   -- the second element (index 1) is a Kmax-list containing the parameters of the fit (with
+      phi, rupt and tau)
+   - k is the value of k which is to be smoothed according to the neighbors. WARNING: k here is
+     an index (min 0, max K-1)
+   - lminr is the minimum size of a segment
+   Returns:
+   A list similar to entree, but with the results stored in the k-th element (i.e. the 
+   k-th element of the first element is the log-likelihood, and the k-th element of the
+   second element contain the parameters).
+ */
+SEXP neighbors(SEXP x, SEXP Pr, SEXP entree, SEXP kr, SEXP lminr) 
+{
+    int Kmax, i, k, K1, K2;
+    double a, tmp, tmp1, tmp2;
+    SEXP phi1, phi2, G, outDP, rupt1, outEM1, rupt2, outEM2, paramf, Lres, paramv,kk, resu, L, param;
+    
+    Kmax = length(VECTOR_ELT(entree,1));
+    k = INTEGER(kr)[0];
+    K1=-1;
+    K2=-1;
+    a=R_NegInf;
+    
+    /* Checks if the value of k is null */
+    if (isNull(VECTOR_ELT(VECTOR_ELT(entree,1), k))) {
+	return(entree);
+    }
+    
+    PROTECT(L = VECTOR_ELT(entree, 0));
+    PROTECT(param = VECTOR_ELT(entree, 1));    
+    PROTECT(rupt1 = allocMatrix(INTSXP, k+1, 2));
+    PROTECT(rupt2 = allocMatrix(INTSXP, k+1, 2));
+    PROTECT(paramv = allocVector(VECSXP, 3));
+    PROTECT(paramf = allocVector(VECSXP, 2));
+    PROTECT(resu = allocVector(VECSXP, 2));
+    PROTECT(kk = allocVector(INTSXP, 1));
+    
+    /* Left neighbor */
+    if (k > 0) {
+	a = REAL(L)[0];
+	K1 = 0;
+	for (i = 0; i<=k; i++) {
+	    if (a < REAL(L)[i]) {
+		a = REAL(L)[i];
+		K1 = i;		
+	    }
+	}
+    }
+
+    if ((k==0)||(a < -(1e16))||ISNA(a)) {
+	K1 = -1;
+    } else {
+	PROTECT(phi1 = VECTOR_ELT(VECTOR_ELT(param,K1),0));
+	PROTECT(G = GmixtSimultanee(x, lminr, phi1));
+	INTEGER(kk)[0] = k+1;
+	PROTECT(outDP = DynProg(G,kk));/* à priori +1, car valeur et pas indice */
+	
+	/* Updates rupt */
+	
+	INTEGER(rupt1)[0] =0;
+	INTEGER(rupt1)[k+1] = INTEGER(VECTOR_ELT(outDP,1))[k];
+
+	for (i = 1; i<(k+1); i++) {
+	    INTEGER(rupt1)[i] = INTEGER(VECTOR_ELT(outDP,1))[k+(i-1)*(k+1)]+1;
+	    INTEGER(rupt1)[i+k+1] = INTEGER(VECTOR_ELT(outDP,1))[k+i*(k+1)];
+	}
+	
+	
+	/* EM */
+	PROTECT(outEM1 = EMAlgoSimultane(x, rupt1, Pr, phi1));
+    }
+
+
+    /* right neighbor */
+    if (k < (Kmax-1)) {
+	a = REAL(L)[k+1];
+	K2 = k+1;
+	for (i = k+1; i<Kmax; i++) {
+	    if (a < REAL(L)[i]) {
+		a = REAL(L)[i];
+		K2 = i;		
+	    }
+	}
+    }
+
+    if ((k==(Kmax-1))||(a < -(1e16))||ISNA(a)) {
+	K2 = -1;
+    } else {
+	PROTECT(phi2 = VECTOR_ELT(VECTOR_ELT(param,K2),0));
+	PROTECT(G = GmixtSimultanee(x, lminr, phi2));
+	INTEGER(kk)[0] = k+1;
+	PROTECT(outDP = DynProg(G,kk));/* à priori +1, car valeur et pas indice */
+	
+	/* Updates rupt */
+	INTEGER(rupt2)[0] =0;
+	INTEGER(rupt2)[k+1] = INTEGER(VECTOR_ELT(outDP,1))[k];
+	for (i = 1; i<(k+1); i++) {
+	    INTEGER(rupt2)[i] = INTEGER(VECTOR_ELT(outDP,1))[k+(i-1)*(k+1)]+1;
+	    INTEGER(rupt2)[i+k+1] = INTEGER(VECTOR_ELT(outDP,1))[k+i*(k+1)];
+	}
+	
+	/* EM */
+	PROTECT(outEM2 = EMAlgoSimultane(x, rupt2, Pr, phi2));
+    }
+    
+
+    /* Which is max: left, right or k? */
+    a = 2;
+    SET_VECTOR_ELT(paramv,0, VECTOR_ELT(VECTOR_ELT(param,k),0));
+    SET_VECTOR_ELT(paramv,1, VECTOR_ELT(VECTOR_ELT(param,k),1));
+    SET_VECTOR_ELT(paramv,2, VECTOR_ELT(VECTOR_ELT(param,k),2));
+    tmp = REAL(L)[k];
+    if (K1 > -1) {
+	tmp1 = REAL(VECTOR_ELT(outEM1,2))[0];
+    } else {
+	tmp1 = R_NegInf;
+    }
+    if (K2 > -1) {
+	tmp2 = REAL(VECTOR_ELT(outEM2,2))[0];
+    } else {
+	tmp2 = R_NegInf;
+    }
+    PROTECT(Lres=L);
+        
+    if (K1 > -1) {
+	if ((tmp1 > tmp)&&(tmp1 > tmp2)) {
+	    SET_VECTOR_ELT(paramv,0, VECTOR_ELT(outEM1, 0));
+	    SET_VECTOR_ELT(paramv,1, rupt1);
+	    SET_VECTOR_ELT(paramv,2, VECTOR_ELT(outEM1, 1));
+	    REAL(Lres)[k] = tmp1;
+	}
+    }
+    if (K2 > -1) {
+	if ((tmp2 > tmp)&&(tmp2 > tmp1)) {
+	    SET_VECTOR_ELT(paramv,0, VECTOR_ELT(outEM2, 0));
+	    SET_VECTOR_ELT(paramv,1, rupt2);
+	    SET_VECTOR_ELT(paramv,2, VECTOR_ELT(outEM2, 1));
+	    REAL(Lres)[k] = tmp2;
+	}
+    }
+
+    PROTECT(paramf=param);
+    SET_VECTOR_ELT(paramf, k, paramv);    
+    SET_VECTOR_ELT(resu,0,Lres);
+    SET_VECTOR_ELT(resu,1,paramf);
+    UNPROTECT(2);
+    
+    if (K2 > -1) {
+	UNPROTECT(4);
+    }
+    if (K1 > -1) {
+	UNPROTECT(4);
+    }
+
+    UNPROTECT(8);
+
+    return(resu);
+}
+
+
 
 /* Hybrid algorithm, combining the EM algorithm and the dynamic programming for 
    segmentation.
