@@ -1,6 +1,7 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <R.h>
 #include <Rmath.h>
@@ -1191,8 +1192,6 @@ SEXP EMAlgoSimultane(SEXP x, SEXP rupt, SEXP Pr, SEXP phi)
 
 
 
-
-
 /* Hybrid algorithm, combining the EM algorithm and the dynamic programming for 
    segmentation.
    It is an algorithm which combines dynamic programming
@@ -1285,11 +1284,9 @@ SEXP hybridSimultanee(SEXP x, SEXP Pr, SEXP Kmaxr)
 	    SET_VECTOR_ELT(phi,0,mu);
 	    SET_VECTOR_ELT(phi,1,sigma);
 	    SET_VECTOR_ELT(phi,2,prop);
-	    
 
 	    /* Loop for fitting */
 	    while ((delta > 1e-4) && (empty==0) && (dv == 0) && (j <= 100)) {
-
 		j++;
 		
 		/* Dynamic programming */
@@ -1372,7 +1369,8 @@ SEXP hybridSimultanee(SEXP x, SEXP Pr, SEXP Kmaxr)
 	    oukonenez++;
 	}
 
-	UNPROTECT(2); /* Unprotects G and out */
+
+UNPROTECT(2); /* Unprotects G and out */
     }
 
     SET_VECTOR_ELT(resu,0,Linc);
@@ -1382,3 +1380,127 @@ SEXP hybridSimultanee(SEXP x, SEXP Pr, SEXP Kmaxr)
 
     return(resu);
 }
+
+
+/* // get the convex hull of (0,y[0]), ... (i, y[i]), .. (n, y[n]) */
+void getConvexHull(double *y, int *convex, int n)
+{ 
+  int compt=0, sizeConvexHull=1;
+  //initialisation 
+  convex[0]=0; 
+  double ytest; 
+  while(compt<n) 
+  { 
+    for( int i=compt+1; ++i; i<n-1) 
+    { 
+      ytest = (y[i+1]-y[compt])/(i+1-compt)+y[compt]; 
+      if(y[i] > ytest) 
+      { 
+        convex[sizeConvexHull] = i;
+        sizeConvexHull ++; 
+        compt = i; break; 
+        }  
+      } 
+    } 
+} 
+ 
+ 
+SEXP testConvexHull(SEXP y, SEXP nSEXP)
+{
+  int nC;
+  nC = INTEGER(nSEXP)[0];
+  double yvec[nC];
+  int convex[nC];
+  for( int i=0; i<nC; ++i)
+    {
+      yvec[i]=REAL(y)[i];
+      convex[i]=-1;
+    }
+    getConvexHull(yvec, convex,nC);
+  for( int i=0; i<nC; ++i)
+    {
+      printf("%d ",convex[i]);
+    }
+  printf("\n");
+  SEXP resu;
+  PROTECT(resu = allocVector(INTSXP, 1));
+  INTEGER(resu)[0]=nC;
+  UNPROTECT(1);
+  return(resu);
+}
+
+
+   
+
+
+/* SEXP getPointsToBeImproved(SEXP resHyb,  int P, int Kmax) */
+/* { */
+/*   int i=0; */
+/*   int Kmin=P; */
+/*   double lvmax = REAL(Linc)[Kmin-1]; */
+/*   SEXP beComputed, n; */
+/*   PROTECT(beComputed = allocVector(INTSXP, Kmax-Kmin)); */
+/*   PROTECT(n = allocVector(INTSXP, 1)); */
+/*   int nToBeComputed=0, WhoIsMax=Kmin; */
+/*   int who[Kmax-Kmin]; */
+/*   double logLike[Kmax-Kmin]; */
+
+/*   who[0]=0; */
+/*   // Find the maximum - no tricky algorithm as the vector is not suposed to be large */
+/*   beComputed = allocVector(INTSXP, Kmax-Kmin); */
+/*   for( i=Kmin+1; i<Kmax; ++i) */
+/*     { 	 */
+/*       // a priori all points have to be recomputed */
+/*       who[i-Kmin]=i; */
+/*       logLike[i-Kmin] =REAL(VECTOR_ELT(Linc,0))[i-1]; */
+/*       if( REAL(Linc)[i-Kmin]> lvmax ) { */
+/* 	lvmax = logLike; */
+/*         WhoIsMax = i; */
+/*       } */
+/*     } */
+/*   // the maximum should be removed  of who; */
+/*   who[WhoIsMax-Kmin] = -1; */
+
+/*   for( i= WhoIsMax-1; i>1; --i) */
+/*     { */
+/*       if(logLike[i-1]<logLike[i-2]) */
+/* 	{ */
+/* 	  lohLike[i-1] = -1e17; */
+/* 	} else */
+/* 	{ */
+/* 	  who[i-1]=-1; */
+/* 	} */
+/*     } */
+
+/*   for( i= Kmax; i>whoIsMax; --i) */
+/*     { */
+/*       if(logLike[i-1]>logLike[i]) */
+/* 	{ */
+/* 	  lohLike[i-1] = -1e17; */
+/* 	} else */
+/* 	{ */
+/* 	  who[i-1]=-1; */
+/* 	} */
+/*     } */
+
+/*   INTEGER(n)[0]=nToBeComputed; */
+/*   SEXP resu; */
+/*   SET_VECTOR_ELT(resu, 0, beComputed); */
+/*   SET_VECTOR_ELT(resu, 1, n); */
+  
+/*   return(resu); */
+/* } */
+
+/* SEXP neighbors(SEXP resHyb,  int P, int Kmax ) */
+/* { */
+/*   int i=0; */
+/*   SEXP pointsRecompute; */
+/*   // which value of K could be improved  */
+/*   PROTECT( pointsRecompute=getPointsToBeImproved(Linc, Kmax, P)); */
+/*   int nComp=INTEGER(VECTOR_ELT(pointsRecompute,1) )[0]; */
+/*   printf("A recalculer %d", nComp); */
+/*   return(pointsRecompute); */
+
+/* } */
+
+
