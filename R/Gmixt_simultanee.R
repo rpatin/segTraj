@@ -21,19 +21,19 @@ Gmixt_simultanee <- function(Don,lmin,phi){
   
   
   for (signal in 1:2){
-    x=Don[signal,]
-    xi  = cumsum(x) 
+    z=Don[signal,]
+    zi  = cumsum(z) 
     lg  = lmin:n
-    xi  = xi[lg]
-    x2  = x^2
-    x2i = cumsum(x2)
-    x2i = x2i[lg]
+    zi  = zi[lg]
+    z2  = z^2
+    z2i = cumsum(z2)
+    z2i = z2i[lg]
     
-    wk  = repmat(t( x2i/lg-(xi/lg)^2 ),P,1)
+    wk  = repmat(t( z2i/lg-(zi/lg)^2 ),P,1)
     
     #wk=repmat(wk,P,1)
     
-    dkp   = (repmat(t(xi),P,1)/repmat(t(lg),P,1)-repmat(m[signal,],1,n-1))^2
+    dkp   = (repmat(t(zi),P,1)/repmat(t(lg),P,1)-repmat(m[signal,],1,n-1))^2
     A     = (wk+dkp)/repmat(s[signal,]^2,1,n-lmin+1)+log(2*pi*repmat(s[signal,]^2,1,n-1))
     A     = -0.5*repmat(t(lg),P,1)*A +(repmat(log(prop),1,n-1))
     A_max = apply(A,2,max)
@@ -45,11 +45,11 @@ Gmixt_simultanee <- function(Don,lmin,phi){
     
     for (i in (2:(n-lmin+1))) {
       ni  = n-i-lmin+3
-      x2i = x2i[2:ni]-x2[i-1]
-      xi  = xi[2:ni]-x[i-1]
+      z2i = z2i[2:ni]-z2[i-1]
+      zi  = zi[2:ni]-z[i-1]
       lgi = lmin:(n-i+1)
-      wk  = repmat(t(x2i)/(lgi)-(xi/(lgi))^2,P,1)
-      dkp = (repmat(t(xi),P,1)/repmat(t(lgi),P,1)-repmat(m[signal,],1,ni-1))^2
+      wk  = repmat(t(z2i)/(lgi)-(zi/(lgi))^2,P,1)
+      dkp = (repmat(t(zi),P,1)/repmat(t(lgi),P,1)-repmat(m[signal,],1,ni-1))^2
       A   = (wk+dkp)/repmat(s[signal,]^2,1,ni-1)+log(2*pi*repmat(s[signal,]^2,1,ni-1))
       A   = -0.5*repmat(t(lgi),P,1)*A +(repmat(log(prop),1,ni-1))
       A_max = apply(A,2,max)

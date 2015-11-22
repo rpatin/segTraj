@@ -222,3 +222,13 @@ plot.picard <- function(x, axes = FALSE, number=NULL,
     return(invisible(NULL))
 
 }
+
+
+
+testConvexHull <- function(y)
+  {
+    n <- length(y)
+    print(y)
+    print(n)
+     resu <- .Call("testConvexHull", as.numeric(y), as.integer(n), PACKAGE="segTraj")
+}

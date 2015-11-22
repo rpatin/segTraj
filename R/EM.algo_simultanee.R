@@ -7,7 +7,7 @@
 #' @return a list with  phi, the MLE, tau =(taukj) the probability for segment k to belong to classe,lvinc = lvinc,empty = empty,dv = dv
 #' @export
  
-EM.algo_simultanee <- function(x,rupt,P,phi){
+EM.algo_simultanee <- function(x,rupt,P,phi, sameSigma=TRUE){
 
   K     = nrow(rupt)
   delta = 1
@@ -28,7 +28,7 @@ EM.algo_simultanee <- function(x,rupt,P,phi){
     tau        = Estepout[[1]]
     lvinc      = Estepout[[2]]
 
-    phi        = Mstep_simultanee(x,rupt,tau,phi)
+    phi        = Mstep_simultanee(x,rupt,tau,phi, sameSigma=sameSigma)
     np         = apply(tau,2,sum)
     
     delta      =max(unlist(lapply(names(phi),function(d) {max(abs(phi_temp[[d]]-phi[[d]])/phi[[d]])})))

@@ -1,12 +1,14 @@
 # neighbors
 #' neighbors tests whether neighbors of point k,P can  be used to re-initialize the EM algorithm and to improve the log-likelihood.
+#' @param x the initial dataset
 #' @param L the likelihood
 #' @param k the points of interest 
 #' @param P the number of class
 #' @param ibp to deal with forbidden path, not currently implemented 
 #' @param lmin minimal size of the segment to be implemented
 #' @return smoothin likelihood
-neighbors <- function (L,k,param,ibp=c(),P,lmin=2) {
+#' 
+neighbors <- function (x, L,k,param,ibp=c(),P,lmin=2, sameSigma=TRUE) {
   
   
   V = length(ibp)
@@ -24,16 +26,16 @@ neighbors <- function (L,k,param,ibp=c(),P,lmin=2) {
     out.EM1 = list(lvinc=- Inf)
   }    else { 
     phi1                     = param[[K1]]$phi     
-    G                        = Gmixt_simultanee(Don = x,lmin=lmin,phi=phi1)
+    G                        = Gmixt_simultanee(Don = x,lmin=lmin,phi=phi1) ## computes the cost matrix
     if (V>0){
       G          =forbidden.path(G,ibp)
     }
     
-    out.DP     = DynProg(G,k)
+    out.DP     = DynProg(G,k) ## produces the best segmentation with the given cost matrix in k segment
     t.est      = out.DP$t.est
     J.est      = out.DP$J.est
     rupt1      = matrix(ncol=2,c(c(1,t.est[k,1:(k-1)]+1),t.est[k,]))
-    out.EM1    = EM.algo_simultanee(x = x,rupt = rupt1,P = P,phi = phi1)
+    out.EM1    = EM.algo_simultanee(x = x,rupt = rupt1,P = P,phi = phi1, sameSigma=sameSigma)
   } #end else
   
   
@@ -58,7 +60,7 @@ neighbors <- function (L,k,param,ibp=c(),P,lmin=2) {
     t.est      = out.DP$t.est
     J.est      = out.DP$J.est
     rupt2      = matrix(ncol=2,c(c(1,t.est[k,1:(k-1)]+1),t.est[k,]))
-    out.EM2    = EM.algo_simultanee(x,rupt2,P,phi2)
+    out.EM2    = EM.algo_simultanee(x,rupt2,P,phi2, sameSigma=sameSigma)
     
   } #end else
   

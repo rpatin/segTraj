@@ -7,7 +7,7 @@
 #' @param tau the K*P matrix containing posterior probabilities of membership to clusters
 #' @return phi the updated value of the pramaeters
 
-Mstep_simultanee <- function (x,rupt,tau,phi) {
+Mstep_simultanee <- function (x,rupt,tau,phi, sameSigma=TRUE) {
   
   K = nrow(tau)
   P = ncol(tau)
@@ -21,11 +21,21 @@ Mstep_simultanee <- function (x,rupt,tau,phi) {
   #
   np    = nk %*% tau
   m=Yk %*% tau/rep(np,each=2)
-  for (i in 1:2){
+  if(!sameSigma){
+    for (i in 1:2){
     s[i,]=  colSums( tau*(sapply(1:P, function(p) {apply(rupt,1,FUN=function(y) sum((x[i,y[1]:y[2]]-m[i,p])^2   ))}))) 
+  } 
+    s=sqrt(s/rep(np,each=2))
+  } else
+  {
+    for (i in 1:2){
+      s[i,]=  rep(sum( tau*(sapply(1:P, function(p) {apply(rupt,1,FUN=function(y) sum((x[i,y[1]:y[2]]-m[i,p])^2   ))}))), P) 
+    }
+    s=sqrt(s/n)
+    
   }
-  s=sqrt(s/rep(np,each=2))
-
+  
+  
   prop = apply(tau,2,sum)/K
   b    = order(m[1,])
   m    = m[,b]

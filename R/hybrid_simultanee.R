@@ -33,7 +33,7 @@
 #' param <- res$param[[Kopt]]
 #' bisig_plot(x = x, rupt = param$rupt, mu=param$phi$mu )
 
-hybrid_simultanee <- function(x,P,Kmax,lmin=2){
+hybrid_simultanee <- function(x,P,Kmax,lmin=2, sameSigma=TRUE){
   
   Linc  = matrix(-Inf,nrow=Kmax,ncol=1)
   n     = dim(x)[2]
@@ -65,7 +65,7 @@ hybrid_simultanee <- function(x,P,Kmax,lmin=2){
       th     = out$t.est[K,1:K]
       rupt   = matrix(ncol=2,c(c(1,th[1:(K-1)]+1),th)) 
       phi    = EM.init_simultanee(x,rupt,K,P)
-      out.EM = EM.algo_simultanee(x,rupt,P,phi)
+      out.EM = EM.algo_simultanee(x,rupt,P,phi, sameSigma=sameSigma)
       phi    = out.EM$phi
       tau    = out.EM$tau
       bisig_plot(x, rupt = rupt)
@@ -79,12 +79,13 @@ hybrid_simultanee <- function(x,P,Kmax,lmin=2){
         t.est      = out.DP$t.est
         J.est      = out.DP$J.est
         rupt       = ruptAsMat(t.est[K,])
-        out.EM     = EM.algo_simultanee(x,rupt,P,phi.temp)
+        out.EM     = EM.algo_simultanee(x,rupt,P,phi.temp, sameSigma=sameSigma)
         phi        = out.EM$phi
         tau        = out.EM$tau
         empty      = out.EM$empty
         dv         = out.EM$dv
         lvinc.mixt = out.EM$lvinc
+        print(lvinc.mixt)
         bisig_plot(x, rupt = rupt)
         delta      =max(unlist(lapply(names(phi),function(d) {max(abs(phi.temp[[d]]-phi[[d]])/phi[[d]])})))
         
@@ -124,14 +125,14 @@ hybrid_simultanee <- function(x,P,Kmax,lmin=2){
     
     for (k in Kconc){
       
-      out.neighbors  = neighbors(L=Linc,k=k,param=param,P=P,lmin=lmin)
+      out.neighbors  = neighbors(x=x, L=Linc,k=k,param=param,P=P,lmin=lmin)
       param          = out.neighbors$param
       Linc           = out.neighbors$L
       #plot(1:length(Linc),Linc,col=1)     lines(1:length(Ltmp),Ltmp,col=2)     lines(k,Linc[k],col=3)
       
     } # end k
     
-    out.neighbors  = neighbors(L=Linc,k=Kmax,param=param,P=P,lmin=lmin)
+    out.neighbors  = neighbors(x=x, L=Linc,k=Kmax,param=param,P=P,lmin=lmin)
     param          = out.neighbors$param
     Linc          = out.neighbors$L
     

@@ -1,14 +1,18 @@
 # bisig_plot
 #' bisig_plot draws the plots of the bivaraite signal on the same plot (scale free)
 #' @param x the signal to be plotted
-#' @param rupt optionnal, if given add vertical lines at change points (rupt should)
+#' @param rupt optionnal, if given add vertical lines at change points (rupt should a vector)
 #' 
 #' @export
 #' @return no value
 
 bisig_plot<- function(x, rupt=NULL, mu=NULL, pop=NULL){
   n <- dim(x)[2]
-  K <- dim(rupt)[1]
+  if(!is.null(rupt)){
+    if(!is.matrix(rupt))
+      rupt       = ruptAsMat(rupt)
+    K <- dim(rupt)[1]
+  }
   m <- rowMeans(x)
   s <- apply(x,1,sd)
   

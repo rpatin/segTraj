@@ -8,9 +8,10 @@ Gmean_simultanee<-function(Don,lmin=2)
 {
   n = dim(Don)[2] 
 
+  
+  ## every element of the list is the cost motrix for one signal
   matD_list=lapply(1:2,function(nb) {
     Res=matrix(Inf,n,n)
-    x=0
     x=Don[nb,] #depend de la forme des donnees    
     x2=x^2
     x2i=cumsum(x2)
