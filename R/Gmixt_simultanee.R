@@ -17,48 +17,60 @@ Gmixt_simultanee <- function(Don,lmin,phi){
   
   n = dim(Don)[2]
   #x = x'
-  G = matrix(0,ncol=n,nrow=n)
+  G = list()
+  Gtest = list()
   
   
   for (signal in 1:2){
+    
     z=Don[signal,]
-    zi  = cumsum(z) 
-    lg  = lmin:n
-    zi  = zi[lg]
+    zi  = cumsum(z) # z cumul
+    lg  = 1:n  # possible position for the end of  first segment
     z2  = z^2
     z2i = cumsum(z2)
-    z2i = z2i[lg]
-    
-    wk  = repmat(t( z2i/lg-(zi/lg)^2 ),P,1)
-    
-    #wk=repmat(wk,P,1)
-    
-    dkp   = (repmat(t(zi),P,1)/repmat(t(lg),P,1)-repmat(m[signal,],1,n-1))^2
-    A     = (wk+dkp)/repmat(s[signal,]^2,1,n-lmin+1)+log(2*pi*repmat(s[signal,]^2,1,n-1))
-    A     = -0.5*repmat(t(lg),P,1)*A +(repmat(log(prop),1,n-1))
-    A_max = apply(A,2,max)
-    A     = exp(A-repmat(t (A_max) ,P,1))
     
     #rappel: on fait du plus court chemin
     #        donc on prend -LV
-    G[1,lmin:n] = -log(apply(A,2,sum)) - A_max
+    # G[[signal]][1, l] contains the likelihood of the segment starting in 1 and finishing
+    G[[signal]] <- matrix(Inf,ncol=n,nrow=n)
     
-    for (i in (2:(n-lmin+1))) {
-      ni  = n-i-lmin+3
-      z2i = z2i[2:ni]-z2[i-1]
-      zi  = zi[2:ni]-z[i-1]
-      lgi = lmin:(n-i+1)
-      wk  = repmat(t(z2i)/(lgi)-(zi/(lgi))^2,P,1)
-      dkp = (repmat(t(zi),P,1)/repmat(t(lgi),P,1)-repmat(m[signal,],1,ni-1))^2
-      A   = (wk+dkp)/repmat(s[signal,]^2,1,ni-1)+log(2*pi*repmat(s[signal,]^2,1,ni-1))
-      A   = -0.5*repmat(t(lgi),P,1)*A +(repmat(log(prop),1,ni-1))
-      A_max = apply(A,2,max)
-      A     = exp(A-repmat(t (A_max) ,P,1))
-      G[i,(i+lmin-1):n] =  G[i,(i+lmin-1):n]-log(apply(A,2,sum)) - A_max
-    }}
-  for (i in (lmin-1):n){
-    for (j in 1:i){
-      G[i,j]=Inf
-    }}
-  invisible(G)
+    ## The following code makes use of vectoriel facilities
+    wk  <- z2i/lg-(zi/lg)^2
+    dkp <- (sweep(repmat(t(zi/lg),P,1), MARGIN = 1, STATS = m[signal,]))^2
+    ##  Aold     = (wkold+dkpold)/repmat(s[signal,]^2,1,n-lmin+1)+ log(2*pi*repmat(s[signal,]^2,1,n-lmin+1))
+    A <- sweep(dkp, MARGIN = 2, STATS = wk, FUN = '+')
+    A <- sweep(A, MARGIN = 1, STATS = s[signal,]^2, FUN = '/')
+    A <- sweep(A, MARGIN = 1, STATS = log(2*pi*s[signal,]^2), FUN = '+')
+    A <- -0.5*sweep(A, MARGIN = 2, STATS = lg, FUN = '*')
+    A <- sweep(A, MARGIN = 1, STATS = log(prop), FUN='+')
+    ## finally A[k,p] contains -0.5 *\sum_{l=1^(k)} (Z_l -\mu^p)^2 /(sigma_p^2) +log(pi_p)
+    ## that is the density of observing segment 1:k and beeing in cluster p
+    
+    ## the normalization using A_max is used to avoid numerical issues with the exponential
+    A_max = apply(A,2,max)
+    Aprov     = exp(sweep(A, MARGIN = 2, STATS = A_max, FUN = '-'))
+    G[[signal]][1,lmin:n] = -log(apply(Aprov[,lmin:n],2,sum)) - A_max[lmin:n]
+    
+    for (i in (2:(n-lmin))) {
+      Aprov <- sweep(A, MARGIN = 1, STATS = A[,i], FUN = '-') 
+      Aprov_max = apply(Aprov,2,max)
+      Aprov     = exp(sweep(Aprov, MARGIN = 2, STATS = Aprov_max, FUN = '-'))
+      ## problem if i=n-lmin+1
+      ## Aprov[,(i+lmin-1):n] is a vector, and apply can't be used
+      ## this case is postponed at the end of the loop
+      G[[signal]][i,(i+lmin-1):n] = -log(apply(Aprov[,(i+lmin-1):n],2,sum)) - Aprov_max[(i+lmin-1):n]
+    }
+  i <- (n-lmin+1)
+  Aprov <- sweep(A, MARGIN = 1, STATS = A[,i], FUN = '-') 
+  Aprov_max = apply(Aprov,2,max)
+  Aprov     = exp(sweep(Aprov, MARGIN = 2, STATS = Aprov_max, FUN = '-'))
+  ## problem if i=n-lmin+1
+  ## Aprov[,(i+lmin-1):n] is a vector, and apply can't be used
+  ## this case is postponed at the end of the loop
+  G[[signal]][i,(i+lmin-1):n] = -log(sum(Aprov[,(i+lmin-1):n])) - Aprov_max[(i+lmin-1):n]
+  
+  }
+  
+  res <- Reduce('+', G )
+  invisible(res)
 }

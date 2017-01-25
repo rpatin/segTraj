@@ -79,10 +79,7 @@ neighbors <- function (x, L,k,param,ibp=c(),P,lmin, sameSigma=TRUE) {
     param[[k]] = list(phi = out.EM2$phi,rupt = rupt2, tau=out.EM2$tau, cluster=apply(out.EM2$tau, 1, which.max))
     L[k] = out.EM2$lvinc}
   
-  
-  
-  
   invisible(list(L=L,param=param))  
-  
+    
 } #end function
 
