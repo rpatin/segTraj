@@ -4,12 +4,16 @@
 \alias{bisig_plot}
 \title{bisig_plot draws the plots of the bivaraite signal on the same plot (scale free)}
 \usage{
-bisig_plot(x, rupt = NULL, mu = NULL, pop = NULL)
+bisig_plot(x, rupt = NULL, mu = NULL, pop = NULL, merge.seg = FALSE)
 }
 \arguments{
 \item{x}{the signal to be plotted}
 
 \item{rupt}{optionnal, if given add vertical lines at change points (rupt should a vector)}
+
+\item{mu}{optionnal the mean of each class of segment,}
+
+\item{pop}{optionnal the cluster to whom each segment belongs to,}
 }
 \value{
 no value

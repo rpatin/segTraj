@@ -4,7 +4,7 @@
 \alias{Gmean_simultanee}
 \title{Gmean_simultanee  calculate the cost matrix for a segmentation model with changes in the mean}
 \usage{
-Gmean_simultanee(Don, lmin = 2)
+Gmean_simultanee(Don, lmin)
 }
 \arguments{
 \item{Don}{the bivariate signal}

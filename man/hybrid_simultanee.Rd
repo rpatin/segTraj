@@ -4,7 +4,7 @@
 \alias{hybrid_simultanee}
 \title{\code{hybrid_simultanee} performs a simultaneous seg - clustering for bivariate signals.}
 \usage{
-hybrid_simultanee(x, P, Kmax, lmin = 2, sameSigma = TRUE)
+hybrid_simultanee(x, P, Kmax, lmin, sameSigma = TRUE)
 }
 \arguments{
 \item{x}{the two-dimensionnal signal, one line per dimension}

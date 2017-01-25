@@ -4,7 +4,7 @@
 \alias{neighbors}
 \title{neighbors tests whether neighbors of point k,P can  be used to re-initialize the EM algorithm and to improve the log-likelihood.}
 \usage{
-neighbors(x, L, k, param, ibp = c(), P, lmin = 2, sameSigma = TRUE)
+neighbors(x, L, k, param, ibp = c(), P, lmin, sameSigma = TRUE)
 }
 \arguments{
 \item{x}{the initial dataset}
