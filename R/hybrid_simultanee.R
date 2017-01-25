@@ -13,7 +13,7 @@
 #' @param Kmax the maximal number of segments
 #' 
 #' @export
-#' @return  a list with tau posterior probability 
+#' @return  a list with Linc, the incomplete loglikelihood =Linc,param=paramtau posterior probability 
 #
 #' @examples
 #' K  <- 5; rupt <- sample(1:20, K+1, replace=TRUE); rupt <- cumsum(rupt); 
@@ -69,11 +69,14 @@ hybrid_simultanee <- function(x,P,Kmax,lmin=2, sameSigma=TRUE){
       phi    = out.EM$phi
       tau    = out.EM$tau
       bisig_plot(x, rupt = rupt)
-      while ( (delta>1e-4) & (empty==0) & (dv==0) & (j<=100)){           
-        
+      lvCurrent <- out$J.est[K]
+      improveLv <- TRUE
+      while ( (delta>1e-4) & (empty==0) & (dv==0) & (j<=100) & improveLv){           
+
         j          = j+1 
         phi.temp   = phi
-        G          = Gmixt_simultanee(x,lmin=lmin,phi)
+        
+        G          = Gmixt_simultanee(x,lmin=lmin,phi.temp)
         
         out.DP     = DynProg(G,K)
         t.est      = out.DP$t.est
@@ -85,17 +88,16 @@ hybrid_simultanee <- function(x,P,Kmax,lmin=2, sameSigma=TRUE){
         empty      = out.EM$empty
         dv         = out.EM$dv
         lvinc.mixt = out.EM$lvinc
-        print(lvinc.mixt)
+        improveLv <- ( lvinc.mixt > lvCurrent)
+        lvCurrent <- lvinc.mixt
         bisig_plot(x, rupt = rupt)
         delta      =max(unlist(lapply(names(phi),function(d) {max(abs(phi.temp[[d]]-phi[[d]])/phi[[d]])})))
-        
-        
       }#end while
       
       
       
       Linc[K]=lvinc.mixt
-      param[[K]] = list(phi=phi,rupt=rupt, tau=tau)
+      param[[K]] = list(phi=phi,rupt=rupt, tau=tau, cluster=apply(tau, 1, which.max))
       
     } #end K
     
