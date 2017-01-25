@@ -10,10 +10,8 @@
 #' 
 neighbors <- function (x, L,k,param,ibp=c(),P,lmin, sameSigma=TRUE) {
   
-  
   V = length(ibp)
   Kmax <- length(param)
-  
   
   # left neighbor
   a  = max(L[1:(k-1)])
