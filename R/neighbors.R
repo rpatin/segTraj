@@ -8,7 +8,7 @@
 #' @param lmin minimal size of the segment to be implemented
 #' @return smoothin likelihood
 #' 
-neighbors <- function (x, L,k,param,ibp=c(),P,lmin=2, sameSigma=TRUE) {
+neighbors <- function (x, L,k,param,ibp=c(),P,lmin, sameSigma=TRUE) {
   
   
   V = length(ibp)
@@ -73,10 +73,10 @@ neighbors <- function (x, L,k,param,ibp=c(),P,lmin=2, sameSigma=TRUE) {
   
   # parameter update
   if (a==1){
-    param[[k]] = list(phi = out.EM1$phi, rupt = rupt1, tau=out.EM1$tau)
+    param[[k]] = list(phi = out.EM1$phi, rupt = rupt1, tau=out.EM1$tau, cluster=apply(out.EM1$tau, 1, which.max))
     L[k] = out.EM1$lvinc}
   if (a==2) {
-    param[[k]] = list(phi = out.EM2$phi,rupt = rupt2, tau=out.EM2$tau)
+    param[[k]] = list(phi = out.EM2$phi,rupt = rupt2, tau=out.EM2$tau, cluster=apply(out.EM2$tau, 1, which.max))
     L[k] = out.EM2$lvinc}
   
   
