@@ -18,8 +18,8 @@ EM.algo_simultanee <- function(x,rupt,P,phi, sameSigma=TRUE){
   np    = apply(tau,2,sum)
   eps   = 10e-10
   
-
-  while ( (delta>=1e-4) & (min(np)>eps) & (iter<=5000) ){
+  while ( (delta>=1e-4) & (min(np)>eps) & (iter<=500 )){
+    
     iter       = iter+1
     phi_temp   = phi
     logdensity = t( apply(rupt,1,FUN=function(y) logdens_simultanee(   x[, y[1]:y[2] ],phi)))
