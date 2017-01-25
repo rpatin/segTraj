@@ -35,8 +35,8 @@ bisig_plot<- function(x, rupt=NULL, mu=NULL, pop=NULL, merge.seg=FALSE){
     ruptProv[p+1, 2] <- rupt[K,2]
     
     if(p>1){
-      ruptProv[2:p,] <- sapply(1:(p-1), function(p_){c(rupt[change[p_]+1,1], 
-                                                       rupt[change[p_+1],2])})
+      ruptProv[2:p,] <- t(sapply(1:(p-1), function(p_){c(rupt[change[p_]+1,1], 
+                                                       rupt[change[p_+1],2])}))
     }
     invisible( lapply(1:(p+1), function(d){ abline(v=ruptProv[d,1], lwd=1.5)}))
     
