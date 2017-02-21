@@ -117,7 +117,9 @@ hybrid_simultanee <- function(x,P,Kmax,lmin=2, sameSigma=TRUE){
     a        = chull(Lfinite)
     a        = kvfinite[a]
     oumin    = which(a==(Kmin))
+    if(length(oumin) == 0) oumin <- which.min(a) 
     oumax    = which(a==(Kmax))
+    if(length(oumax) ==0) oumax <- which.max(a) 
     a        = a[oumin:oumax]
     kvfinite = sort(a)
     # find the coordinates of points out of the convex hull
